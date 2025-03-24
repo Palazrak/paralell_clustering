@@ -47,15 +47,22 @@
 | 800000           | 1768.5      | 1013.31                | 401.796                 | 306.238                  | 273.631                  |
 | 1000000          | 1335.8      | 1830.43                | 510.225                 | 436.382                  | 382.63                   |
 
-- Falta una grafica de lineas que muestre la informacion de la tabla. Numero de puntos en el eje horizontal, tiempo de ejecucion en el eje vertical, las distintas lineas presentaran distintas configuraciones del experimento, usar paleta de color cualitativa.
-- Analicemos el speed up comparando serial vs paralelo 8 cores (8 CORES NO ES EL MEJOR NECESARIAMENTE, HAY QUE ARGUMENTAR BIEN Y ELEGIR CHIDO CUAL VAMOS A USAR)
+> Tabla 1. Resultados tabulares de los experimentos realizados.
 
-| Número de Puntos | Versión Serial (ms) | Versión 8 Cores (ms) | Speed Up |
-|------------------|---------------------|----------------------|----------|
-| 100000           | 164.5               | 43.4041              | 3.79     |
-| 200000           | 221.5               | 131.622              | 1.68     |
-| 300000           | 392.2               | 132.083              | 2.97     |
-| 400000           | 533.4               | 186.391              | 2.86     |
-| 600000           | 1036.1              | 269.145              | 3.85     |
-| 800000           | 1768.5              | 401.796              | 4.4      |
-| 1000000          | 1335.8              | 510.225              | 2.62     |
+![grafica_tiempos](./imagenes/tiempos_ejecucion.jpg)
+> Figura 1. Tiempo promedio de ejecución (10 iteraciones) vs numero de puntos.
+
+- Podemos ver que antes de 600000 puntos, las versiones de 8, 16 y 32 cores tienen un comportamiento muy similar. Por lo tanto, antes de 600000 puntos se sugiere usar 8 cores, que ocupa menos recursos y da un buen resultado
+- Despues de 600000 puntos, se observa que 32 cores esta claramente por debajo que el resto de escenarios. Realizaremos nuestro analisis con respecto a 32 cores suponiendo que estaremos trabajando con un numero de datos superior a 600000.
+
+| Número de Puntos | Versión Serial (ms) | Versión 32 Cores (ms) | Speed Up |
+|------------------|---------------------|----------------------|-----------|
+| 100000           | 164.5               | 63.9812              | 2.571     |
+| 200000           | 221.5               | 97.2848              | 2.277     |
+| 300000           | 392.2               | 150.26               | 2.610     |
+| 400000           | 533.4               | 222.485              | 2.397     |
+| 600000           | 1036.1              | 231.537              | 4.475     |
+| 800000           | 1768.5              | 273.631              | 6.463     |
+| 1000000          | 1335.8              | 382.63               | 3.491     |
+
+> Tabla 2. Speed ups presentados. Version serial vs 32 cores
