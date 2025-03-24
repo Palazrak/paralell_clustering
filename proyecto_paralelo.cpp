@@ -203,7 +203,7 @@ int main() {
     vector<int> sizes = {100000, 200000, 300000, 400000, 600000, 800000, 1000000};
     int k = 5;         // Número de clusters (ajustable)
     int trials = 10;   // Número de repeticiones para cada tamaño
-    int cores = 1; // Número de cores a utilizar en la versión paralela
+    int cores = omp_get_num_procs()/2; // Número de cores a utilizar en la versión paralela
     cout << "Número de cores usados: " << cores << "\n";
     
     // Ejecutar 10 veces para cada tamaño y promediar el tiempo de clustering

@@ -135,4 +135,6 @@ Thumbs.db
 *.csv
 
 #Propios del proyecto
-ejecutables/
+demo*
+proyecto_paralelo
+proyecto_serial
