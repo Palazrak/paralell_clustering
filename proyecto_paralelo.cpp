@@ -33,8 +33,6 @@ std::vector<Punto> lectura(const std::string& archivo) {
     }
     
     std::string line;
-    // Si el CSV tiene encabezados, se puede descartar la primera línea:
-    // std::getline(file, line);
     
     while (std::getline(file, line)) {
         std::stringstream lineStream(line);
@@ -81,7 +79,7 @@ double kmeans_experiment_parallel(string input, int n, int k, int cores) {
         return 0.0;
     }
     
-    // 2. Inicializar centroides aleatorios fuera de los datos
+    // Inicializar centroides aleatorios dentro del rango [min, max] de los datos
     double min_x = std::numeric_limits<double>::max();
     double max_x = std::numeric_limits<double>::lowest();
     double min_y = std::numeric_limits<double>::max();
@@ -95,7 +93,6 @@ double kmeans_experiment_parallel(string input, int n, int k, int cores) {
     }
     
     vector<Centroid> centroides(k);
-    srand(time(NULL)); // Semilla para números aleatorios
     for (int i = 0; i < k; i++){
         centroides[i].x = min_x + ((double)rand() / RAND_MAX) * (max_x - min_x);
         centroides[i].y = min_y + ((double)rand() / RAND_MAX) * (max_y - min_y);
@@ -201,7 +198,7 @@ double kmeans_experiment_parallel(string input, int n, int k, int cores) {
     return duration_cluster;
 }
 
-int main() {
+int main() { 
     // Definir los distintos tamaños de datos para los experimentos
     vector<int> sizes = {100000, 200000, 300000, 400000, 600000, 800000, 1000000};
     int k = 5;         // Número de clusters (ajustable)

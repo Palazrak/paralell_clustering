@@ -34,8 +34,6 @@ std::vector<Punto> lectura(const std::string& archivo) {
     }
     
     std::string line;
-    // Si el CSV tiene encabezados, se puede descartar la primera línea:
-    // std::getline(file, line);
     
     while (std::getline(file, line)) {
         std::stringstream lineStream(line);
@@ -99,7 +97,6 @@ double kmeans_experiment(string input, int n, int k) {
     }
     
     vector<Centroid> centroides(k);
-    // srand(time(NULL)); // Semilla para números aleatorios
     
     for (int i = 0; i < k; i++) {
         centroides[i].x = min_x + ((double)rand() / RAND_MAX) * (max_x - min_x);
