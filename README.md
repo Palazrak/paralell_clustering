@@ -60,7 +60,7 @@ En la **Tabla 1** se presentan los tiempos promedio de 10 ejecuciones (en milise
 | 800000           | 1768.5      | 1013.31                | 401.796                 | 306.238                  | 273.631                  |
 | 1000000          | 1335.8      | 1830.43                | 510.225                 | 436.382                  | 382.63                   |
 
-> **Tabla 1.** Tiempos promedio de ejecución (en milisegundos) para distintas configuraciones de número de cores y número de puntos.
+> **Tabla 1.** Tiempos promedio de ejecución (en milisegundos) para distintas configuraciones de número de hilos y número de puntos.
 
 ![grafica_tiempos_ejecucion](./imagenes/tiempos_ejecucion.jpg)
 > **Figura 1**. Tiempo promedio de ejecución (10 iteraciones) vs número de puntos.
