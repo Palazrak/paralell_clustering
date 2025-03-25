@@ -1,43 +1,56 @@
-# Proyecto: K-means con OpenMP
+# K-means con OpenMP
 
-## Cómputo Paralelo y en la Nube. Primavera 2025. ITAM
+## Proyecto de Cómputo Paralelo y en la Nube. Primavera 2025. ITAM
 
-### Introduccion
+###### Pablo Alazraki [@Palazrak](https://github.com/Palazrak) y Frida Márquez [@fridamarquezg](https://github.com/fridamarquezg)
 
-- El programa lee un csv con puntos generados aleatoriamente, con sus coordenadas `x` y `y` generadas aleatoriamente entre 0 y 1 y regresa un csv con los mismos puntos y su cluster asociado.
-- Puntos creados con el archivo `synthetic_clusters.ipynb` obtenido del repositorio del curso [computoparalelo2025a](https://github.com/octavio-gutierrez/computoparalelo2025a)
-- Se presenta un codigo en version serial y un codigo en version paralela, asi como estrategia de paralelizacion, experimentos y analisis de resultados
-- Los experimentos consisten en correr 10 veces el algoritmo y obtener promedios del tiempo ejecucion variando las siguientes componentes:
-  - Numero de puntos (100000, 200000, 300000, 400000, 600000, 800000, 1000000)
-  - Numero de hilos (1, `num_cores_virtuales`/2, `num_cores_virtuales`, `num_cores_virtuales`*2)
-- Los experimentos fueron ejecutados en un equipo con las siguientes caracteristicas:
-  - MSI Thin GF63 12VF
-  - Procesador 12th Gen Intel(R) Core(TM) i7-12650H   2.30 GHz
-  - 16 cores virtuales
-  - 32 GB de memoria RAM
-  - Tarjeta Grafica NVIDIA GeForce RTX 4060 Laptop GPU (16 GB)
-  - Ejecutado dentro de un subsistema de Linux (WSL2) con distribucion de Ubuntu (Ubuntu 22.04.5 LTS)
-  - Se utilizo VS Code como editor de texto usando la extension oficial de Microsoft `C/C++`
+### Introducción
 
-### Codigo Serial
+El presente trabajo muestra la implementación y evaluación de una versión paralelizada del algoritmo K-means utilizando OpenMP. Se desarrolló tanto una versión serial como una versión paralela y se llevaron a cabo experimentos para comparar el desempeño en función del número de puntos y la cantidad de hilos (o *cores*) de ejecución. El algoritmo K-means, ampliamente utilizado en análisis de datos y aprendizaje no supervisado, tiene como objetivo agrupar un conjunto de puntos en `k` clusters minimizando la varianza entre ellos. El proyecto inicia con la lectura de un archivo `.csv` que contiene puntos generados aleatoriamente en un espacio bidimensional (coordenadas `x` y `y` distribuidas aleatoriamente entre 0 y 1) generado a partir del notebook `synthetic_clusters.ipynb`, disponible en el repositorio oficial del curso [computoparalelo2025a](https://github.com/octavio-gutierrez/computoparalelo2025a). Una vez hechas las versiones serial y paralela, se realizaron experimentos para observar la potencial mejora de usar más cores (variando en 1, 8, 16 y 32 cores) en distintos escenarios, descritos más a detalle en las siguientes secciones. Los resultados experimentales indican que, mientras para conjuntos de datos pequeños la diferencia entre configuraciones de 8, 16 y 32 hilos es marginal, para volúmenes superiores a 600,000 puntos el uso de 32 hilos ofrece mejoras significativas en el tiempo de ejecución.
 
-- El algoritmo en pseudocodigo esta dado por:
-  1. Crear `k` centroides y distribuirlos aleatoriamente sobre los datos
-  2. Asignar los puntos al centroide mas cercano
-  3. Actualizar la posicion de los centroides obteniendo los promedios de las posiciones en `x` y en `y`
-  4. Repetir los pasos 2. y 3. hasta que ningun punto cambie de cluster
-- Para esta implementacion del algoritmo de k-means, se utilizo la distancia euclidiana
+En este repositorio se encuentran los archivos que contienen las versiones serial y paralela de los experimentos, el notebook con el que se generaron los puntos, los resultados tabulares obtenidos y un archivo con el código paralelizado listo para recibir un archivo `.csv` y clusterizar.
 
-### Codigo Paralelo
+### Metodología
 
-- Como estrategia de paralelizacion, se decidio utilizar paralell fors en las siguientes secciones:
-  - Al calcular la distancia de cada punto a cada cluster center y hacer la asignacion
-  - Al mover los cluster centers
-- Es importante notar que, como el criterio de convergencia es que ningun punto cambie de cluster center, era necesario determinar cuantos puntos habian cambiado de lugar. Esto implica que se uso un paralell for con una operacion de reduccion de suma para determinar el total de puntos que habian camibiado de cluster centers
+#### Descripción de la implementación serial
+
+La implementación serial del algoritmo se basa en un esquema iterativo clásico, cuya estructura en pseudocódigo se puede resumir en los siguientes pasos:
+
+1. Inicialización de `k` centroides, distribuyéndolos de forma aleatoria sobre el conjunto de datos.
+
+2. Asignación de cada punto al centroide más cercano, utilizando la distancia euclidiana como métrica.
+
+3. Actualización de la posición de los centroides mediante el cálculo del promedio de las coordenadas `x` y `y` de los puntos asignados a cada cluster.
+
+4. Repetición de los pasos 2 y 3 hasta alcanzar un criterio de convergencia, que definimos como el estado en el que ningún punto cambia de cluster.
+
+#### Estrategia de paralelización
+
+La estrategia de paralelización fue usar OpenMP para implementar la ejecución paralela en dos secciones específicas del algoritmo. En primer lugar, durante la etapa de asignación, es necesario calcular para cada punto la distancia a todos los centroides y determinar el más cercano. Para ello, se distribuyó el conjunto de puntos entre múltiples hilos, de manera que cada hilo se encargara de calcular las distancias de sus puntos asignados a cada centroide y realizar la correspondiente asignación al cluster más cercano. En segundo lugar, durante la etapa de actualización, se paralelizó de tal forma que cada hilo se encargara de realizar los cálculos para las nuevas coordenadas `x` y `y` de cada centroide.
+
+### Configuración experimental
+
+Los experimentos se realizaron ejecutando el algoritmo 10 veces con cada configuración, para posteriormente obtener promedios del tiempo de ejecución. En dichos experimentos, se variaron dos parámetros fundamentales:
+
+1. El número de puntos, considerando conjuntos de datos de 100,000, 200,000, 300,000, 400,000, 600,000, 800,000 y 1,000,000 puntos.
+
+2. El número de hilos, utilizando configuraciones de 1, 8 (la mitad de los núcleos virtuales), 16 (la cantidad total de núcleos virtuales) y 32 (el doble del número de núcleos virtuales).
+
+Es importante considerar que la ejecución se llevó a cabo en un equipo con las siguientes características:
+
+- **Equipo**: MSI Thin GF63 12VF
+- **Procesador**: Intel® Core™ i7-12650H de 12ª generación (2.30 GHz)
+- **Núcleos**: 16 núcleos virtuales
+- **Memoria**: 32 GB de RAM
+- **Tarjeta gráfica**: NVIDIA GeForce RTX 4060 Laptop GPU (16 GB)
+- **Sistema operativo**: Subsistema de Linux (WSL2) con Ubuntu 22.04.5 LTS
+- **Entorno de desarrollo**: Visual Studio Code, utilizando la extensión oficial de C/C++ de Microsoft
 
 ### Resultados
 
-| Número de Puntos | Serial (ms) | Paralelo (1 core) (ms) | Paralelo (8 cores) (ms) | Paralelo (16 cores) (ms) | Paralelo (32 cores) (ms) |
+En la **Tabla 1** se presentan los tiempos promedio de 10 ejecuciones (en milisegundos) para las diferentes configuraciones de número de puntos y número de hilos. Se incluye también una visualización (**Figura 1**) para representar gráficamente la información de la tabla.
+
+| Número de puntos | Serial (ms) | Paralelo (1 core) (ms) | Paralelo (8 cores) (ms) | Paralelo (16 cores) (ms) | Paralelo (32 cores) (ms) |
 |------------------|-------------|------------------------|-------------------------|--------------------------|--------------------------|
 | 100000           | 164.5       | 118.308                | 43.4041                 | 60.8701                  | 63.9812                  |
 | 200000           | 221.5       | 276.516                | 131.622                 | 114.514                  | 97.2848                  |
@@ -47,15 +60,14 @@
 | 800000           | 1768.5      | 1013.31                | 401.796                 | 306.238                  | 273.631                  |
 | 1000000          | 1335.8      | 1830.43                | 510.225                 | 436.382                  | 382.63                   |
 
-> Tabla 1. Resultados tabulares de los experimentos realizados.
+> **Tabla 1.** Tiempos promedio de ejecución (en milisegundos) para distintas configuraciones de número de cores y número de puntos.
 
 ![grafica_tiempos](./imagenes/tiempos_ejecucion.jpg)
-> Figura 1. Tiempo promedio de ejecución (10 iteraciones) vs numero de puntos.
+> **Figura 1**. Tiempo promedio de ejecución (10 iteraciones) vs número de puntos.
 
-- Podemos ver que antes de 600000 puntos, las versiones de 8, 16 y 32 cores tienen un comportamiento muy similar. Por lo tanto, antes de 600000 puntos se sugiere usar 8 cores, que ocupa menos recursos y da un buen resultado
-- Despues de 600000 puntos, se observa que 32 cores esta claramente por debajo que el resto de escenarios. Realizaremos nuestro analisis con respecto a 32 cores suponiendo que estaremos trabajando con un numero de datos superior a 600000.
+En la gráfica se observa que, antes de los 600,000 puntos, los escenarios con 8, 16 y 32 cores presentan un comportamiento similar, lo cual se justifica por la tendencia y cercanía de las rectas. Sin embargo, a partir de 600,000 datos, el escenario con 32 cores registra de forma consistente los menores tiempos promedio de ejecución. Suponiendo casos de uso con una cantidad de puntos superior a 600,000, consideramos que la opción con 32 cores representa la mejor alternativa entre las configuraciones exploradas. Por esta razón, en la Tabla 2 se presentan los speed-ups obtenidos por la versión paralela con 32 cores en comparación con la versión serial.
 
-| Número de Puntos | Versión Serial (ms) | Versión 32 Cores (ms) | Speed Up |
+| Número de puntos | Versión serial (ms) | Versión 32 cores (ms) | Speed-up |
 |------------------|---------------------|----------------------|-----------|
 | 100000           | 164.5               | 63.9812              | 2.571     |
 | 200000           | 221.5               | 97.2848              | 2.277     |
@@ -65,4 +77,10 @@
 | 800000           | 1768.5              | 273.631              | 6.463     |
 | 1000000          | 1335.8              | 382.63               | 3.491     |
 
-> Tabla 2. Speed ups presentados. Version serial vs 32 cores
+> **Tabla 2**. Speed-up alcanzado por la versión con 32 hilos respecto a la versión serial.
+
+Podemos observar que los speed-ups se mueven en un rango de 2.397 hasta 6.463. Consideramos que estos speed-ups son razonables, partiendo de que el requerimiento para la entrega del proyecto es de mínimo 1.5 de forma consistente.
+
+### Conclusiones
+
+El estudio presentado demuestra que la implementación paralela del algoritmo k-means utilizando OpenMP permite obtener mejoras significativas en el tiempo de ejecución, especialmente en el procesamiento de grandes volúmenes de datos. Los experimentos realizados evidencian que, para conjuntos de datos menores a 600,000 puntos, la utilización de 8 hilos resulta suficiente para alcanzar un rendimiento competitivo. Sin embargo, para escenarios con una mayor carga computacional, la configuración de 32 hilos resulta la opción más adecuada, logrando reducir drásticamente el tiempo de cómputo en comparación con la versión serial. Estos hallazgos subrayan la importancia de una estrategia de paralelización bien diseñada y la adecuada asignación de recursos en aplicaciones de cómputo intensivo.
