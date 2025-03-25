@@ -62,7 +62,7 @@ En la **Tabla 1** se presentan los tiempos promedio de 10 ejecuciones (en milise
 
 > **Tabla 1.** Tiempos promedio de ejecución (en milisegundos) para distintas configuraciones de número de cores y número de puntos.
 
-![grafica_tiempos](./imagenes/tiempos_ejecucion.jpg)
+![grafica_tiempos_ejecucion](./imagenes/tiempos_ejecucion.jpg)
 > **Figura 1**. Tiempo promedio de ejecución (10 iteraciones) vs número de puntos.
 
 En la gráfica se observa que, antes de los 600,000 puntos, los escenarios con 8, 16 y 32 cores presentan un comportamiento similar, lo cual se justifica por la tendencia y cercanía de las rectas. Sin embargo, a partir de 600,000 datos, el escenario con 32 cores registra de forma consistente los menores tiempos promedio de ejecución. Suponiendo casos de uso con una cantidad de puntos superior a 600,000, consideramos que la opción con 32 cores representa la mejor alternativa entre las configuraciones exploradas. Por esta razón, en la Tabla 2 se presentan los speed-ups obtenidos por la versión paralela con 32 cores en comparación con la versión serial.
