@@ -64,6 +64,7 @@ Función experimental paralela de k-means que:
 - Ejecuta el algoritmo de clustering hasta convergencia, paralelizando:
    1. La asignación de cada punto a su centroide más cercano.
    2. El reajuste de los centros (suma y actualización) usando reducción manual.
+- Si algún cluster queda vacío, se re-inicializa su centroide con un punto aleatorio.
 - Mide el tiempo exclusivo de la etapa de clustering usando omp_get_wtime.
 - Escribe el resultado en el archivo de salida "<n>_results.csv".
 Retorna el tiempo (en ms) empleado en la etapa de clustering.
@@ -93,6 +94,8 @@ double kmeans_experiment_parallel(string input, int n, int k, int cores) {
     }
     
     vector<Centroid> centroides(k);
+    // Puedes inicializar la semilla una vez fuera del bucle para mayor consistencia.
+    srand(time(NULL));
     for (int i = 0; i < k; i++){
         centroides[i].x = min_x + ((double)rand() / RAND_MAX) * (max_x - min_x);
         centroides[i].y = min_y + ((double)rand() / RAND_MAX) * (max_y - min_y);
@@ -145,7 +148,6 @@ double kmeans_experiment_parallel(string input, int n, int k, int cores) {
         std::vector<std::vector<double>> localSumY(numThreads, std::vector<double>(k, 0.0));
         std::vector<std::vector<int>> localCount(numThreads, std::vector<int>(k, 0));
         
-        #pragma omp parallel for
         for (size_t i = 0; i < puntos.size(); i++){
             int tid = omp_get_thread_num();
             int cl = puntos[i].cluster;
@@ -164,12 +166,16 @@ double kmeans_experiment_parallel(string input, int n, int k, int cores) {
             }
         }
         
-        // Actualizar los centros en paralelo
-        #pragma omp parallel for
+        // Actualizar los centros en paralelo, re-inicializando si el cluster está vacío
         for (int j = 0; j < k; j++){
             if (count[j] > 0) {
                 centroides[j].x = sumX[j] / count[j];
                 centroides[j].y = sumY[j] / count[j];
+            } else {
+                // Si el cluster está vacío, re-inicializar el centroide con un punto aleatorio del conjunto
+                int randomIndex = rand() % puntos.size();
+                centroides[j].x = puntos[randomIndex].x;
+                centroides[j].y = puntos[randomIndex].y;
             }
         }
         
@@ -179,7 +185,6 @@ double kmeans_experiment_parallel(string input, int n, int k, int cores) {
     
     double end_cluster = omp_get_wtime();
     double duration_cluster = (end_cluster - start_cluster) * 1000.0; // Convertir a milisegundos
-    // Se omiten impresiones para no alterar los tiempos
     
     // 4. Escribir el resultado en el archivo de salida
     string outputFile = to_string(n) + "_results.csv";
@@ -199,9 +204,9 @@ double kmeans_experiment_parallel(string input, int n, int k, int cores) {
 }
 
 int main() { 
-    double cluster_time = kmeans_experiment_parallel("1000000_data.csv", 1000000, 5, omp_get_num_procs()/2);
+    double cluster_time = kmeans_experiment_parallel("980000_data.csv", 980000, 8, omp_get_num_procs());
     
-    cout << "\nPara 1000000 puntos, el tiempo de clustering (paralelo) es: "
-             << cluster_time << " ms" << "\n";
+    cout << "\nPara 980000 puntos, el tiempo de clustering (paralelo) es: "
+         << cluster_time << " ms" << "\n";
     return 0;
 }
